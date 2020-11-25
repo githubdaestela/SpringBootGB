@@ -1,0 +1,40 @@
+version: '3.4'
+services:
+  db:
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      TZ: America/Sao_Paulo
+      MYSQL_ROOT_PASSWORD: ADMIN
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ADMIN
+      MYSQL_DATABASE: blog_pessoal
+    ports:
+      - "3308:3306"
+    networks:
+      - generation-network
+  blogpessoal:
+    restart: always
+    build: ./blogPessoalSecurity
+    working_dir: /blogPessoalSecurity
+    environment:
+      TZ: America/Sao_Paulo
+      SPRING_BOOT_ENVIRONMENT: Production
+    volumes:
+      - ./blogPessoalSecurity:/blogPessoalSecurity
+      - ~/.m2:/root/.m2
+    ports:
+      - "9000:8080"
+    command: mvn clean spring-boot:run
+    links:
+      - db
+    depends_on:
+      - db
+    networks:
+      - generation-network
+networks:
+    generation-network:
+        driver: bridge
